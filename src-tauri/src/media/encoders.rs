@@ -1,9 +1,6 @@
 //! Encoder discovery with automatic best-pick (Phase 1).
 //!
 //! Priority: NVENC → AMF → QSV → libx264 (software fallback).
-//! Detection is purely textual over `ffmpeg -encoders` output: no SDK is
-//! loaded, no hardware is touched, and nothing is *assumed* present — every
-//! encoder is verified before it is advertised.
 
 use serde::{Deserialize, Serialize};
 
@@ -76,7 +73,6 @@ pub fn detect_available_encoders(encoders_output: &str) -> Vec<AvailableEncoder>
 
 /// Pick the best available encoder, if any.
 pub fn select_best(encoders: &[AvailableEncoder]) -> Option<AvailableEncoder> {
-    // `detect_available_encoders` already emits in preference order.
     encoders.first().cloned()
 }
 
@@ -84,7 +80,7 @@ pub fn select_best(encoders: &[AvailableEncoder]) -> Option<AvailableEncoder> {
 mod tests {
     use super::*;
 
-    const SAMPLE: &str = " V..... h264_nvenc  NVIDIA NVENC H.264\\n V..... libx264  libx264 H.264\\n";
+    const SAMPLE: &str = " V..... h264_nvenc  NVIDIA NVENC H.264\n V..... libx264  libx264 H.264\n";
 
     #[test]
     fn detects_only_listed_encoders() {
@@ -98,20 +94,20 @@ mod tests {
 
     #[test]
     fn prefers_hardware_over_software() {
-        let found = detect_available_encoders(" V..... h264_qsv Intel\\n V..... libx264 x264\\n");
+        let found = detect_available_encoders(" V..... h264_qsv Intel\n V..... libx264 x264\n");
         let best = select_best(&found).unwrap();
         assert_eq!(best.kind, EncoderKind::QsvH264);
     }
 
     #[test]
     fn software_fallback_when_no_hardware() {
-        let found = detect_available_encoders(" V..... libx264 x264\\n");
+        let found = detect_available_encoders(" V..... libx264 x264\n");
         assert_eq!(select_best(&found).unwrap().kind, EncoderKind::Libx264);
     }
 
     #[test]
     fn empty_when_nothing_matches() {
-        let found = detect_available_encoders("no encoders here\\n");
+        let found = detect_available_encoders("no encoders here\n");
         assert!(found.is_empty());
         assert!(select_best(&found).is_none());
     }

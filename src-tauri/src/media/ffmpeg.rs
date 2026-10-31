@@ -127,7 +127,7 @@ mod tests {
 
     #[test]
     fn derives_capabilities_from_encoder_list() {
-        let sample = "Encoders:\\n V..... libx264   libx264 H.264\\n A..... aac   AAC (Advanced Audio Coding)\\n";
+        let sample = "Encoders:\n V..... libx264   libx264 H.264\n A..... aac   AAC (Advanced Audio Coding)\n";
         let caps = capabilities_from_encoders(Some("7.1".into()), Some("7.1".into()), sample);
         assert!(caps.has_libx264);
         assert!(caps.has_aac);
@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn empty_encoder_list_disables_rtmp_assumption() {
-        let caps = capabilities_from_encoders(None, None, "   \\n");
+        let caps = capabilities_from_encoders(None, None, "   \n");
         assert!(!caps.has_libx264);
         assert!(!caps.rtmp_supported);
     }
