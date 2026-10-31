@@ -6,6 +6,7 @@ import MediaTestPanel from '../components/MediaTestPanel';
 import LogPanel from '../components/LogPanel';
 import StudioView from '../components/StudioView';
 import ScenesSourcesPanel from '../components/ScenesSourcesPanel';
+import CompositorPanel from '../components/CompositorPanel';
 import MixerPanel from '../components/MixerPanel';
 import StreamRecordPanel from '../components/StreamRecordPanel';
 import SettingsPanel from '../components/SettingsPanel';
@@ -33,6 +34,7 @@ export default function App() {
   const refreshMixer = useLiveStore((s) => s.refreshMixer);
   const refreshDestinations = useLiveStore((s) => s.refreshDestinations);
   const loadSettings = useSettingsStore((s) => s.load);
+
   useEffect(() => {
     if (!isTauriRuntime()) return;
     refreshStatus().catch(() => undefined);
@@ -41,6 +43,7 @@ export default function App() {
     refreshDestinations().catch(() => undefined);
     loadSettings('settings').catch(() => undefined);
   }, []);
+
   return (
     <div className="min-h-screen">
       <header className="border-b border-studio-border px-6 py-3 flex items-center justify-between">
@@ -56,18 +59,52 @@ export default function App() {
       </header>
       <nav className="px-4 pt-3 flex gap-1 max-w-7xl mx-auto" aria-label="Studio sections">
         {TABS.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`rounded-t px-4 py-1.5 text-xs font-semibold tracking-wide ${tab === t.id ? 'bg-studio-panel text-white border border-b-0 border-studio-border' : 'text-slate-400 hover:text-slate-200'}`}>
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`rounded-t px-4 py-1.5 text-xs font-semibold tracking-wide ${tab === t.id ? 'bg-studio-panel text-white border border-b-0 border-studio-border' : 'text-slate-400 hover:text-slate-200'}`}
+          >
             {t.label.toUpperCase()}
           </button>
         ))}
       </nav>
       <main className="p-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3 max-w-7xl mx-auto">
-        {tab === 'studio' && (<><StudioView /><ScenesSourcesPanel /><LogPanel /></>)}
-        {tab === 'stream' && (<><StreamRecordPanel /><LogPanel /></>)}
-        {tab === 'audio' && (<><MixerPanel /><LogPanel /></>)}
-        {tab === 'settings' && (<><SettingsPanel /><DevicesPanel /></>)}
-        {tab === 'diagnostics' && (<><StatusCard /><CapabilitiesPanel /><EncodersPanel /><DevicesPanel /><MediaTestPanel /><LogPanel /></>)}
+        {tab === 'studio' && (
+          <>
+            <StudioView />
+            <ScenesSourcesPanel />
+            <CompositorPanel />
+            <LogPanel />
+          </>
+        )}
+        {tab === 'stream' && (
+          <>
+            <StreamRecordPanel />
+            <LogPanel />
+          </>
+        )}
+        {tab === 'audio' && (
+          <>
+            <MixerPanel />
+            <LogPanel />
+          </>
+        )}
+        {tab === 'settings' && (
+          <>
+            <SettingsPanel />
+            <DevicesPanel />
+          </>
+        )}
+        {tab === 'diagnostics' && (
+          <>
+            <StatusCard />
+            <CapabilitiesPanel />
+            <EncodersPanel />
+            <DevicesPanel />
+            <MediaTestPanel />
+            <LogPanel />
+          </>
+        )}
       </main>
     </div>
   );
