@@ -17,7 +17,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
       - name: Rust checks (no Tauri shell — no WebKit on Linux)
         working-directory: src-tauri
         run: |
@@ -26,7 +25,7 @@ jobs:
           cargo test --no-default-features
       - name: Frontend checks
         run: |
-          npm ci
+          npm install
           npm run typecheck
           npm run lint
           npm run test
@@ -43,7 +42,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
       - name: Install FFmpeg (Gyan full build via choco)
         run: choco install ffmpeg-full -y
       - name: Environment check
@@ -57,7 +55,7 @@ jobs:
         working-directory: src-tauri
       - name: Frontend checks
         run: |
-          npm ci
+          npm install
           npm run typecheck
           npm run lint
           npm run test
