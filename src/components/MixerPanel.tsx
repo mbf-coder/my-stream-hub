@@ -31,7 +31,7 @@ export default function MixerPanel() {
       <div className="flex items-center gap-2 text-xs mb-3">
         <span className="text-slate-400">Master</span>
         <input type="range" min={-60} max={12} step={1} value={mixer.master_gain_db} disabled={busy}
-          onChange={(e) => void setMasterGain(Number(e.target.value)))}
+          onChange={(e) => void setMasterGain(Number(e.target.value))}
           className="flex-1" aria-label="Master gain dB" />
         <span className="font-mono">{mixer.master_gain_db.toFixed(0)} dB</span>
         <button onClick={() => void setMasterMute(!mixer.master_muted)} disabled={busy}
