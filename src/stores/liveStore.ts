@@ -12,6 +12,7 @@ import type {
   StreamStatusPayload,
   VirtualCameraStatus,
   VoiceFx,
+  OAuthToken,
 } from '../types/engine';
 import type { RecordingConfig } from '../services/stream';
 
@@ -46,6 +47,11 @@ interface LiveState {
   refreshVc: () => Promise<void>;
   startVc: () => Promise<void>;
   stopVc: () => Promise<void>;
+  vstNote: string | null;
+  scanVst: (dir: string) => Promise<void>;
+  oauthOk: boolean | null;
+  saveOAuth: (platform: Platform, access_token: string) => Promise<void>;
+  checkOAuth: (platform: Platform) => Promise<void>;
 }
 
 function errMsg(e: unknown): string {
@@ -144,5 +150,25 @@ export const useLiveStore = create<LiveState>()((set) => {
     refreshVc: () => guard(async () => set({ vc: await api.getVirtualCameraStatus() })),
     startVc: () => guard(async () => set({ vc: await api.startVirtualCamera() })),
     stopVc: () => guard(async () => set({ vc: await api.stopVirtualCamera() })),
+    vstNote: null,
+    scanVst: (dir) =>
+      guard(async () => {
+        const [, note] = await api.scanVst3(dir);
+        set({ vstNote: note });
+      }),
+    oauthOk: null,
+    saveOAuth: (platform, access_token) =>
+      guard(async () => {
+        const token: OAuthToken = {
+          platform,
+          access_token,
+          refresh_token: null,
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
+        };
+        await api.storeOAuthToken(token);
+        set({ oauthOk: await api.oauthStatus(platform) });
+      }),
+    checkOAuth: (platform) =>
+      guard(async () => set({ oauthOk: await api.oauthStatus(platform) })),
   };
 });
