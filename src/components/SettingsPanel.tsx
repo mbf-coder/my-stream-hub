@@ -7,10 +7,12 @@ export default function SettingsPanel() {
   const { settings, savedPath, busy, error, patch, save } = useSettingsStore();
   const [baseDir, setBaseDir] = useState('settings');
   if (!settings) return null;
+
   const num = (v: string, fallback: number) => {
     const n = Number(v);
     return Number.isFinite(n) ? n : fallback;
   };
+
   return (
     <section className="rounded-lg bg-studio-panel border border-studio-border p-4 md:col-span-2" aria-label="Settings">
       <div className="flex items-center gap-2 mb-3">
@@ -41,7 +43,7 @@ export default function SettingsPanel() {
           <input type="number" value={settings.stream.video_bitrate_kbps} disabled={busy} onChange={(e) => patch({ stream: { ...settings.stream, video_bitrate_kbps: num(e.target.value, 6000) } })} className="rounded bg-slate-800 border border-studio-border px-2 py-1" />
         </label>
         <label className="flex flex-col gap-1">Audio kbps
-          <select value={settings.stream.audio_bitrate_kbps} disabled={busy} onChange={(e) => patch({ stream: { ...settings.stream, audio_bitrate_kbps: Number(e.target.value) })} className="rounded bg-slate-800 border border-studio-border px-2 py-1">
+          <select value={settings.stream.audio_bitrate_kbps} disabled={busy} onChange={(e) => patch({ stream: { ...settings.stream, audio_bitrate_kbps: Number(e.target.value) } })} className="rounded bg-slate-800 border border-studio-border px-2 py-1">
             {[64, 96, 128, 160, 192, 256, 320].map((b) => <option key={b} value={b}>{b}</option>)}
           </select>
         </label>
@@ -54,7 +56,9 @@ export default function SettingsPanel() {
       </div>
       <div className="flex gap-2 items-center">
         <input value={baseDir} onChange={(e) => setBaseDir(e.target.value)} placeholder="settings dir" className="flex-1 min-w-0 rounded bg-slate-800 border border-studio-border text-xs px-2 py-1 font-mono" />
-        <button onClick={() => void save(baseDir)} disabled={busy} className="rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-3 py-1.5 text-xs font-medium">Save settings</button>
+        <button onClick={() => void save(baseDir)} disabled={busy} className="rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-3 py-1.5 text-xs font-medium">
+          Save settings
+        </button>
       </div>
       {savedPath && <p className="text-[11px] text-emerald-300 mt-1 font-mono break-all">Saved → {savedPath}</p>}
       {error && <p className="text-[11px] text-red-300 mt-1 break-words">{error}</p>}
