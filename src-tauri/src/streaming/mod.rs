@@ -32,7 +32,7 @@ impl StreamConfig {
                 "encoder must not be empty".into(),
             ));
         }
-        if !matches!((self.width, self.height), (w, h) if (160..=7680).contains(&w) && (90..=4320).contains9(h))
+        if !matches!((self.width, self.height), (w, h) if (160..=7680).contains(&w) && (90..=4320).contains(&h))
         {
             return Err(EngineError::InvalidParameter(
                 "resolution".into(),
@@ -65,7 +65,7 @@ impl StreamConfig {
     pub fn output_args(&self, full_ingest: &str) -> EngineResult<Vec<String>> {
         self.validate()?;
         validate_rtmp_url(full_ingest)
-            .map_errh|m| EngineError::InvalidParameter("ingest".into(), m))?;
+            .map_err(|m| EngineError::InvalidParameter("ingest".into(), m))?;
         Ok(vec![
             "-c:v".into(),
             self.encoder.clone(),
