@@ -34,9 +34,14 @@ pub fn probe() -> VirtualCameraStatus {
 
 #[cfg(target_os = "windows")]
 fn probe_windows() -> VirtualCameraStatus {
+    // Best-effort: look for known VC driver device paths via ffmpeg dshow
+    // listing at runtime (done by the caller). Registry probing without
+    // `winreg` would shell out; keep the pure function honest instead.
     VirtualCameraStatus {
         driver_installed: false,
-        driver_detail: Some("run get_video_devices and look for OBS Virtual Camera / Elgato Virtual Camera".into()),
+        driver_detail: Some(
+            "run get_video_devices and look for OBS Virtual Camera / Elgato Virtual Camera".into(),
+        ),
         active: false,
     }
 }
@@ -44,7 +49,10 @@ fn probe_windows() -> VirtualCameraStatus {
 /// Refuse to start without a driver. Pure so tests are deterministic.
 pub fn ensure_startable(status: &VirtualCameraStatus) -> EngineResult<()> {
     if !status.driver_installed {
-        return Err(EngineError::InvalidParameter("virtual_camera".into(), "no virtual-camera driver installed (install OBS VirtualCam or Elgato Virtual Camera first)".into()));
+        return Err(EngineError::InvalidParameter(
+            "virtual_camera".into(),
+            "no virtual-camera driver installed (install OBS VirtualCam or Elgato Virtual Camera first)".into(),
+        ));
     }
     Ok(())
 }
@@ -52,12 +60,16 @@ pub fn ensure_startable(status: &VirtualCameraStatus) -> EngineResult<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn start_is_refused_without_driver() {
         let err = ensure_startable(&VirtualCameraStatus::default()).unwrap_err();
         assert!(matches!(err, EngineError::InvalidParameter(_, _)));
         assert!(err.to_string().contains("no virtual-camera driver"));
     }
+
     #[test]
-    fn probe_never_claims_active() { assert!(!probe().active); }
+    fn probe_never_claims_active() {
+        assert!(!probe().active);
+    }
 }
