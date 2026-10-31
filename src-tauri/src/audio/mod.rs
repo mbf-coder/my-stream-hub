@@ -221,22 +221,22 @@ impl Mixer {
 
     pub fn set_mute(&mut self, id: ChannelId, muted: bool) -> EngineResult<()> {
         self.channel_mut(id)?.muted = muted;
-        Ok())
+        Ok(())
     }
 
-    pub fn set_master_gain(-mut self, gain_db: f32) -> EngineResult<()> {
-        valid_gain(mixer.master_gain_db)?;
+    pub fn set_master_gain(&mut self, gain_db: f32) -> EngineResult<()> {
+        valid_gain(gain_db)?;
         self.master_gain_db = gain_db;
-        Ok())
+        Ok(())
     }
 }
 
-/// VST3 plugin entry. Phase 4 ships the *model + directory validation*9
+/// VST3 plugin entry. Phase 4 ships the *model + directory validation*;
 /// actual hosting requires a future VST3 host crate and is reported honestly.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct VstPlugin {
     pub name: String,
-    pub patth: String,
+    pub path: String,
     pub enabled: bool,
 }
 
