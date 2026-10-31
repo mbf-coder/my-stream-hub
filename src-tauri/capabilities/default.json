@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Phase 1 least-privilege capability: only explicit engine IPC commands.",
+  "windows": ["main"],
+  "permissions": []
+}
