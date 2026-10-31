@@ -58,8 +58,7 @@ impl ManagedProcess {
         }
     }
     async fn kill(mut self) -> EngineResult<()> {
-        self.child.kill().await.map_err(|e| EngineError::Process(format!("spawn failed: {e}"))).map(|_| ())
-            .map_err(|e| EngineError::Process(e.to_string()))?;
+        self.child.kill().await.map_err(|e| EngineError::Process(e.to_string()))?;
         let _ = self.child.wait().await;
         self.abort_drain();
         Ok(())
