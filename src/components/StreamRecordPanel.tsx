@@ -17,6 +17,7 @@ export default function StreamRecordPanel() {
   const [remuxIn, setRemuxIn] = useState('show-01.mkv');
   const [remuxOut, setRemuxOut] = useState('show-01.mp4');
   const [remuxDir, setRemuxDir] = useState('recordings');
+  const [oauthToken, setOauthToken] = useState('');
 
   return (
     <section className="rounded-lg bg-studio-panel border border-studio-border p-4 md:col-span-2" aria-label="Stream and record">
@@ -57,6 +58,18 @@ export default function StreamRecordPanel() {
             >
               {keySaved ? 'Saved ✓' : 'Save key'}
             </button>
+          </div>
+          <div className="flex gap-1 mt-2 items-center">
+            <input type="password" value={oauthToken} onChange={(e) => setOauthToken(e.target.value)} placeholder="OAuth token (keyring only)" autoComplete="off" className="flex-1 min-w-0 rounded bg-slate-800 border border-studio-border text-xs px-2 py-1" />
+            <button
+              onClick={() => void l.saveOAuth(platform, oauthToken).then(() => setOauthToken(''))}
+              disabled={l.busy || !oauthToken}
+              className="rounded bg-slate-700 hover:bg-slate-600 disabled:opacity-50 px-2 py-1 text-xs"
+            >
+              Save OAuth
+            </button>
+            <button onClick={() => void l.checkOAuth(platform)} disabled={l.busy} className="rounded bg-slate-700 hover:bg-slate-600 disabled:opacity-50 px-2 py-1 text-xs">Status</button>
+            {l.oauthOk !== null && <span className={`text-[11px] ${l.oauthOk ? 'text-emerald-300' : 'text-slate-500'}`}>{l.oauthOk ? 'token valid' : 'no token'}</span>}
           </div>
           <div className="flex gap-2 mt-2">
             <button
