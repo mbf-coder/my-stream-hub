@@ -1,6 +1,9 @@
 //! Encoder discovery with automatic best-pick (Phase 1).
 //!
 //! Priority: NVENC → AMF → QSV → libx264 (software fallback).
+//! Detection is purely textual over `ffmpeg -encoders` output: no SDK is
+//! loaded, no hardware is touched, and nothing is *assumed* present — every
+//! encoder is verified before it is advertised.
 
 use serde::{Deserialize, Serialize};
 
@@ -73,12 +76,25 @@ pub fn detect_available_encoders(encoders_output: &str) -> Vec<AvailableEncoder>
 
 /// Pick the best available encoder, if any.
 pub fn select_best(encoders: &[AvailableEncoder]) -> Option<AvailableEncoder> {
+    // `detect_available_encoders` already emits in preference order.
     encoders.first().cloned()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const SAMPLE: &str = " V..... h264_nvenc  NVIDIA NVENC H.264\\n V..... libx264  libx264 H.264\\n";
+
+    #[test]
+    fn detects_only_listed_encoders() {
+        let found = detect_available_encoders(SAMPLE);
+        assert_eq!(found.len(), 2);
+        assert_eq!(found[0].kind, EncoderKind::NvencH264);
+        assert_eq!(found[1].kind, EncoderKind::Libx264);
+        assert!(found[0].hardware);
+        assert!(!found[1].hardware);
+    }
 
     #[test]
     fn prefers_hardware_over_software() {

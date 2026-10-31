@@ -1,7 +1,9 @@
-//! `MediaEngine`: owns the Phase 1 lifecycle.
+//! `MediaEngine`: owns the Phase 1 lifecycle (Phase 1 §1.2).
 //!
-//! Probe FFmpeg/FFprobe/encoders, hold validated config, start/stop the
-//! managed test pipeline, surface diagnostics. Never blocks the Tokio runtime.
+//! Responsibilities: probe FFmpeg/FFprobe/encoders, hold the validated
+//! configuration, start/stop the managed test pipeline, surface diagnostics.
+//! Heavy CPU work (child I/O) stays in `ProcessManager`; this type only
+//! orchestrates state transitions and never blocks the Tokio runtime.
 
 use crate::errors::{EngineError, EngineResult};
 use crate::media::encoders::{self, AvailableEncoder};
@@ -61,6 +63,9 @@ impl MediaEngine {
             }
         };
         let ffprobe_version = ffmpeg::probe_version(ffmpeg::FFPROBE_BIN).await.ok();
+        if ffprobe_version.is_none() {
+            tracing::warn!("ffprobe not found; continuing without probe capabilities");
+        }
         let encoders_output = ffmpeg::fetch_encoders_output().await.unwrap_or_default();
         let caps = ffmpeg::capabilities_from_encoders(ffmpeg_version.clone(), ffprobe_version.clone(), &encoders_output);
         let found = encoders::detect_available_encoders(&encoders_output);
@@ -75,7 +80,7 @@ impl MediaEngine {
         Ok(status)
     }
 
-    /// READY/STOPPED → RUNNING: spawn any validated pipeline job.
+    /// READY/STOPPED → RUNNING: spawn any validated pipeline job (media test, stream, recording).
     pub async fn start_pipeline(&self, job: &FfmpegJob) -> EngineResult<EngineStatus> {
         if !self.status.status().await.state.can_start() {
             return Err(EngineError::InvalidTransition("initialize the engine before starting a pipeline".into()));
@@ -104,11 +109,27 @@ impl MediaEngine {
 
     /// READY/STOPPED → RUNNING: spawn the null-muxer media test.
     pub async fn start_media_test(&self) -> EngineResult<EngineStatus> {
-        self.start_pipeline(&FfmpegJob::media_test()).await
+        let job = FfmpegJob::media_test();
+        self.start_pipeline(&job).await
     }
 
     /// RUNNING → STOPPING → STOPPED with graceful child shutdown.
     pub async fn stop_media_test(&self) -> EngineResult<EngineStatus> {
         self.stop_pipeline().await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn engine_starts_uninitialized() {
+        let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+        rt.block_on(async {
+            let engine = MediaEngine::new(SharedEngine::new());
+            assert_eq!(engine.status().await.state, EngineState::Uninitialized);
+            assert!(engine.start_media_test().await.is_err());
+        });
     }
 }
