@@ -49,7 +49,7 @@ pub async fn list_devices(kind: DeviceKind) -> EngineResult<Vec<CaptureDevice>> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    const FIXTURE: &str = "ffmpeg version 7.1\\n[dshow] DirectShow video devices\\n[dshow]  \\"Integrated Camera\\"\\n[dshow] DirectShow audio devices\\n[dshow]  \\"Microphone\\"\\n";
+    const FIXTURE: &str = "ffmpeg version 7.1\n[dshow] DirectShow video devices\n[dshow]  \"Integrated Camera\"\n[dshow] DirectShow audio devices\n[dshow]  \"Microphone\"\n";
     #[test]
     fn splits_video_and_audio_sections() {
         let (video, audio) = parse_dshow_devices(FIXTURE);
