@@ -187,7 +187,7 @@ mod tests {
         let back = AppConfig::from_json(&json).unwrap();
         assert_eq!(cfg, back);
         assert!(AppConfig::from_json("{ not json").is_err());
-        assert!(AppConfig::from_json(r#"{\"version\":1,\"language\":\"it\",\"theme\":\"dark\",\"base_width\":1,\"base_height\":1080,\"output_width\":1920,\"output_height\":1080,\"fps\":60,\"sample_rate\":48000,\"channels\":2,\"stream\":{\"encoder\":\"auto\",\"video_bitrate_kbps\":6000,\"audio_bitrate_kbps\":160},\"recording\":{\"format\":\"mkv\",\"directory\":\"recordings\",\"video_bitrate_kbps\":8000},\"transition_kind\":\"cut\",\"transition_ms\":300}"#).is_err());
+        assert!(AppConfig::from_json(r#"{"version":1,"language":"it","theme":"dark","base_width":1,"base_height":1080,"output_width":1920,"output_height":1080,"fps":60,"sample_rate":48000,"channels":2,"stream":{"encoder":"auto","video_bitrate_kbps":6000,"audio_bitrate_kbps":160},"recording":{"format":"mkv","directory":"recordings","video_bitrate_kbps":8000},"transition_kind":"cut","transition_ms":300}"#).is_err());
     }
 
     #[test]
