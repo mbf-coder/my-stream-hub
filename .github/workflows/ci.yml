@@ -1,0 +1,67 @@
+name: CI — Phase 1
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  core-linux:
+    name: Rust core + frontend (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Rust checks (no Tauri shell — no WebKit on Linux)
+        working-directory: src-tauri
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --no-default-features --all-targets -- -D warnings
+          cargo test --no-default-features
+      - name: Frontend checks
+        run: |
+          npm ci
+          npm run typecheck
+          npm run lint
+          npm run test
+          npm run build
+
+  full-windows:
+    name: Full build + tests (Windows 11)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install FFmpeg (Gyan full build via choco)
+        run: choco install ffmpeg-full -y
+      - name: Environment check
+        run: .\scripts\check-environment.ps1
+        shell: pwsh
+      - name: Static checks + tests (default features = Tauri shell)
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --workspace --all-targets -- -D warnings
+          cargo test --workspace
+        working-directory: src-tauri
+      - name: Frontend checks
+        run: |
+          npm ci
+          npm run typecheck
+          npm run lint
+          npm run test
+          npm run build
+      - name: Tauri build
+        run: cargo tauri build
+        working-directory: src-tauri
